@@ -2,7 +2,7 @@ package xormplus
 
 import (
 	"fmt"
-	"github.com/various/xormplus/utils"
+	"github.com/go-various/xormplus/utils"
 	"testing"
 )
 

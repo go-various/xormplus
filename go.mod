@@ -1,4 +1,4 @@
-module github.com/various/xormplus
+module github.com/go-various/xormplus
 
 go 1.15
 

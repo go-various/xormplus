@@ -3,8 +3,8 @@ package xormplus
 import (
 	"errors"
 	"fmt"
+	"github.com/go-various/xormplus/utils"
 	"github.com/go-xorm/xorm"
-	"github.com/various/xormplus/utils"
 	"reflect"
 	"strings"
 )
