@@ -1,7 +1,6 @@
 package xormplus
 
 import (
-	"github.com/go-xorm/xorm"
 	"testing"
 )
 
@@ -15,22 +14,18 @@ func (a Task)TableName()string  {
 }
 
 func TestXormplus_NewSession(t *testing.T) {
-	engine, err := xorm.NewEngine("mysql",
+	b, err := NewEngine("mysql",
 		"root:123456@tcp(127.0.0.1)/test?charset=utf8mb4&parseTime=true&loc=Local")
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
-	var out []Task
-
-	engine.ShowSQL(true)
-	b := NewBuilder()
-	b.Where([]Condition{{
+	b.WithCondition([]Condition{{
 		Key:      "task_name",
 		Value:    "test-job",
 		Operator: OperatorEq,
 	}})
-	b.And([]Condition{
+	b.WithAnd([]Condition{
 		{
 			Key:      "time_created",
 			Value:    "2020-03-06 16:22:03",
@@ -42,41 +37,38 @@ func TestXormplus_NewSession(t *testing.T) {
 			Operator: OperatorLt,
 		},
 	})
-	b.Or([]Condition{{
+	b.WithOr([]Condition{{
 		Key:      "task_name",
 		Value:    "test-job",
 		Operator: OperatorEq,
 	}})
-	b.Table(&Task{})
+	b.WithTable(&Task{})
 
-	b.Columns([]Column{{
+	b.WithColumns([]Column{{
 		Name:  "task_name",
 		Func:  "",
 		Alias: "",
 	}})
 	b.WithPageable(NewPageable(0,5))
-	b.Group([]string{"task_id"})
-	t.Log(b.BuildSQL())
+	b.WithGroup([]string{"task_id"})
+
 	sort := NewSort().Column("task_id").ColumnDesc("time_created")
 	b.WithSort(sort)
-	b.Having([]Having{{
+	b.WithHaving([]Having{{
 		Key:      "task_id",
 		Value:    1,
 		Operator: OperatorGt,
 		Func:     "COUNT",
 	}})
-	plus, err := b.BuildPlus(engine.NewSession())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-
-	if pg, err := plus.FetchWithPage(&out); err != nil {
+	t.Log(b.BuildSQL())
+	var tasks []Task
+	if p, err := b.FetchWithPage(&tasks); err != nil {
 		t.Fatal(err)
 		return
 	}else {
-		t.Log(pg)
+		t.Log(p)
 	}
-	t.Log(out)
-
+	session := b.CreateSession()
+	defer session.Close()
+	session.Fetch(&tasks)
 }

@@ -19,13 +19,13 @@ func (u *User)TableName()string  {
 
 func TestBuilder_Table(t *testing.T) {
 	b := NewBuilder()
-	b.Table(&User{})
-	b.Table([]string{})
+	b.WithTable(&User{})
+	b.WithTable([]string{})
 	t.Log(b.BuildSQL())
 }
 func TestBuilder_Or(t *testing.T) {
 	b := NewBuilder()
-	b.Table(&User{})
+	b.WithTable(&User{})
 
 	columns := []Column{
 		{
@@ -42,7 +42,7 @@ func TestBuilder_Or(t *testing.T) {
 			Alias: "total",
 		},
 	}
-	b.Columns(columns)
+	b.WithColumns(columns)
 	or1 := Condition{
 		Key:      "name",
 		Value:    "select",
@@ -106,14 +106,14 @@ func TestBuilder_Or(t *testing.T) {
 		fmt.Println(or1,or2, or3,or4,or5, or6,or7,or8,or10,or9)
 	}
 
-	b.Or([]Condition{or1,or2})
-	b.Or([]Condition{or3,or4})
-	b.And([]Condition{or8}).And([]Condition{or9})
-	b.Where([]Condition{or10,or9})
-	b.And([]Condition{or5}).And([]Condition{or6}).Where([]Condition{or9})
-	b.Where([]Condition{or7, or8})
-	b.Group([]string{"id","name"})
-	b.Having([]Having{{
+	b.WithOr([]Condition{or1,or2})
+	b.WithOr([]Condition{or3,or4})
+	b.WithAnd([]Condition{or8}).WithAnd([]Condition{or9})
+	b.WithCondition([]Condition{or10,or9})
+	b.WithAnd([]Condition{or5}).WithAnd([]Condition{or6}).WithCondition([]Condition{or9})
+	b.WithCondition([]Condition{or7, or8})
+	b.WithGroup([]string{"id","name"})
+	b.WithHaving([]Having{{
 		Key:      "name",
 		Value:    10,
 		Operator: OperatorGte,

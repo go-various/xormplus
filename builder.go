@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-various/xormplus/utils"
-	"github.com/go-xorm/xorm"
 	"reflect"
 	"strings"
 )
@@ -16,16 +15,16 @@ type Builder interface {
 	WithSort(*Sort) Builder
 	WithPageable(Pageable) Builder
 	WithTemplate(Template) Builder
-	Table(interface{}) Builder
-	Columns([]Column) Builder
-	Group([]string) Builder
-	Having([]Having) Builder
-	Or([]Condition) Builder
-	And([]Condition) Builder
-	Where([]Condition) Builder
+	WithTable(interface{}) Builder
+	WithColumns([]Column) Builder
+	WithGroup([]string) Builder
+	WithHaving([]Having) Builder
+	WithOr([]Condition) Builder
+	WithAnd([]Condition) Builder
+	WithCondition([]Condition) Builder
+	Pageable()Pageable
 	BuildSQL() (string, error)
 	BuildCountSQL() (string, error)
-	BuildPlus(inc xorm.Interface) (XormPlus, error)
 	Clone()Builder
 	Clear()
 }
@@ -43,6 +42,10 @@ type builder struct {
 	query    string
 }
 
+func (b *builder) Pageable() Pageable {
+	return b.pageable
+}
+
 func NewBuilder() Builder {
 	return &builder{}
 }
@@ -57,11 +60,12 @@ func (b *builder) WithPageable(p Pageable) Builder {
 	return b
 }
 
+//TODO  waiting completed
 func (b *builder) WithTemplate(template Template) Builder {
 	panic("implement me")
 }
 
-func (b *builder) Table(bean interface{}) Builder {
+func (b *builder) WithTable(bean interface{}) Builder {
 
 	switch t := bean.(type) {
 	case string:
@@ -81,14 +85,14 @@ func (b *builder) Table(bean interface{}) Builder {
 	return b
 }
 
-func (b *builder) Columns(columns []Column) Builder {
+func (b *builder) WithColumns(columns []Column) Builder {
 	for _, column := range columns {
 		b.columns = append(b.columns, column.Inst())
 	}
 	return b
 }
 
-func (b *builder) Or(conditions []Condition) Builder {
+func (b *builder) WithOr(conditions []Condition) Builder {
 	if len(conditions) == 0 {
 		return b
 	}
@@ -100,7 +104,7 @@ func (b *builder) Or(conditions []Condition) Builder {
 	return b
 }
 
-func (b *builder) And(conditions []Condition) Builder {
+func (b *builder) WithAnd(conditions []Condition) Builder {
 	if len(conditions) == 0 {
 		return b
 	}
@@ -112,7 +116,7 @@ func (b *builder) And(conditions []Condition) Builder {
 	return b
 }
 
-func (b *builder) Where(conditions []Condition) Builder {
+func (b *builder) WithCondition(conditions []Condition) Builder {
 	if len(conditions) == 0 {
 		return b
 	}
@@ -124,7 +128,7 @@ func (b *builder) Where(conditions []Condition) Builder {
 	return b
 }
 
-func (b *builder) Group(group []string) Builder {
+func (b *builder) WithGroup(group []string) Builder {
 	var g []string
 	for _, s := range group {
 		g = append(g, fmt.Sprintf("`%s`", s))
@@ -133,7 +137,7 @@ func (b *builder) Group(group []string) Builder {
 	return b
 }
 
-func (b *builder) Having(havings []Having) Builder {
+func (b *builder) WithHaving(havings []Having) Builder {
 	var having []string
 	for _, hv := range havings {
 		having = append(having, hv.Inst())
@@ -182,21 +186,6 @@ func (b *builder) BuildSQL() (string, error) {
 		sb.WriteString(fmt.Sprintf(" LIMIT %d, %d", b.pageable.Skip(), b.pageable.Limit()) )
 	}
 	return sb.String(), nil
-}
-
-func (b *builder) BuildPlus(inc xorm.Interface) (XormPlus, error) {
-	if b.table == "" {
-		return nil, errTableMustBeSupply
-	}
-	if _, err := b.buildQuery(); err != nil {
-		return nil, err
-	}
-
-	return &xormplus{
-		inc: inc,
-		builder: b,
-		pageable: b.pageable,
-	}, nil
 }
 
 func (b *builder) Clone()(bc  Builder){
