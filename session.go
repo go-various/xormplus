@@ -3,6 +3,7 @@ package xormplus
 import (
 	"errors"
 	"github.com/go-xorm/xorm"
+	"reflect"
 	"strconv"
 )
 
@@ -14,6 +15,20 @@ type session struct {
 func NewSession(s *xorm.Session, b Builder) *session {
 	return &session{Session: s, Builder: b}
 }
+func (x *session) Begin() error {
+	return x.Session.Begin()
+}
+func (x *session) Commit() error {
+	return x.Session.Commit()
+}
+
+func (x *session) Rollback() error {
+	return x.Session.Rollback()
+}
+
+func (x *session) Close() {
+	x.Session.Close()
+}
 
 func (x *session) Fetch(rowsSlicePtr interface{}) error {
 	sql, err := x.BuildSQL()
@@ -24,7 +39,7 @@ func (x *session) Fetch(rowsSlicePtr interface{}) error {
 }
 
 func (x *session) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
-	if x.Pageable() == nil{
+	if x.Pageable() == nil {
 		return nil, errors.New("pageable not supplied")
 	}
 	query, err := x.BuildCountSQL()
@@ -49,4 +64,25 @@ func (x *session) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
 	tt, _ := strconv.Atoi(total[0]["total"])
 	pg := NewPagination(tt, x.Pageable())
 	return pg, nil
+}
+
+func (x *session) GetById(id interface{}, beanPtr interface{}) (bool, error) {
+	if reflect.ValueOf(id).IsZero() {
+		return false, errors.New("id cannot be nil")
+	}
+	return x.ID(id).Get(beanPtr)
+}
+
+func (x *session) UpdateById(id interface{}, beanPtr interface{}) (int64, error) {
+	if reflect.ValueOf(id).IsZero() {
+		return 0, errors.New("id cannot be nil")
+	}
+	return x.ID(id).Update(beanPtr)
+}
+
+func (x *session) DeleteById(id interface{}, beanPtr interface{}) (int64, error) {
+	if reflect.ValueOf(id).IsZero() {
+		return 0, errors.New("id cannot be nil")
+	}
+	return x.ID(id).Delete(beanPtr)
 }

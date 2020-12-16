@@ -1,25 +1,26 @@
 package xormplus
 
 import (
+	"github.com/hashicorp/go-hclog"
 	"testing"
 )
 
 type Task struct {
-	TaskId int
+	TaskId   int
 	TaskName string
 }
 
-func (a Task)TableName()string  {
+func (a Task) TableName() string {
 	return "t_task_log"
 }
 
 func TestXormplus_NewSession(t *testing.T) {
-	b, err := NewEngine("mysql",
-		"root:123456@tcp(127.0.0.1)/test?charset=utf8mb4&parseTime=true&loc=Local")
+	b, err := NewEngine(&Config{}, hclog.Default())
 	if err != nil {
 		t.Fatal(err)
 		return
 	}
+	b.NewSession().Close()
 	b.WithCondition([]Condition{{
 		Key:      "task_name",
 		Value:    "test-job",
@@ -49,7 +50,7 @@ func TestXormplus_NewSession(t *testing.T) {
 		Func:  "",
 		Alias: "",
 	}})
-	b.WithPageable(NewPageable(0,5))
+	b.WithPageable(NewPageable(0, 5))
 	b.WithGroup([]string{"task_id"})
 
 	sort := NewSort().Column("task_id").ColumnDesc("time_created")
@@ -65,10 +66,10 @@ func TestXormplus_NewSession(t *testing.T) {
 	if p, err := b.FetchWithPage(&tasks); err != nil {
 		t.Fatal(err)
 		return
-	}else {
+	} else {
 		t.Log(p)
 	}
-	session := b.CreateSession()
+	session := b.NewSession()
 	defer session.Close()
 	session.Fetch(&tasks)
 }

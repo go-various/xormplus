@@ -10,15 +10,19 @@ type Logger struct {
 	hclog.Logger
 }
 
-func DefaultLogger()*Logger{
+func DefaultLogger() *Logger {
 	return &Logger{Logger: hclog.Default().Named("xormplus")}
 }
 
+func NewLogger(logger hclog.Logger) *Logger {
+	return &Logger{Logger: logger.Named("xormplus")}
+}
+
 func (l *Logger) Debug(v ...interface{}) {
-	if len(v) == 0{
+	if len(v) == 0 {
 		return
 	}
-	if len(v) == 1{
+	if len(v) == 1 {
 		l.Logger.Debug(v[0].(string))
 	}
 	l.Logger.Debug(v[0].(string), v[1:]...)
@@ -29,10 +33,10 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Error(v ...interface{}) {
-	if len(v) == 0{
+	if len(v) == 0 {
 		return
 	}
-	if len(v) == 1{
+	if len(v) == 1 {
 		l.Logger.Error(v[0].(string))
 	}
 	l.Logger.Error(v[0].(string), v[1:]...)
@@ -43,10 +47,10 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 }
 
 func (l *Logger) Info(v ...interface{}) {
-	if len(v) == 0{
+	if len(v) == 0 {
 		return
 	}
-	if len(v) == 1{
+	if len(v) == 1 {
 		l.Logger.Info(v[0].(string))
 	}
 	l.Logger.Info(v[0].(string), v[1:]...)
