@@ -31,23 +31,23 @@ func (x *session) Close() {
 }
 
 func (x *session) Fetch(rowsSlicePtr interface{}) error {
-	sql, err := x.BuildSQL()
+	sql, err := x.Builder.BuildSQL()
 	if err != nil {
 		return err
 	}
-	return x.SQL(sql).Find(rowsSlicePtr)
+	return x.Session.SQL(sql).Find(rowsSlicePtr)
 }
 
 func (x *session) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
 	if x.Pageable() == nil {
 		return nil, errors.New("pageable not supplied")
 	}
-	query, err := x.BuildCountSQL()
+	query, err := x.Builder.BuildCountSQL()
 	if err != nil {
 		return nil, err
 	}
 
-	total, err := x.QueryString(query)
+	total, err := x.Session.QueryString(query)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (x *session) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = x.SQL(sql).Find(rowsSlicePtr)
+	err = x.Session.SQL(sql).Find(rowsSlicePtr)
 	if err != nil {
 		return nil, err
 	}
@@ -70,19 +70,19 @@ func (x *session) GetById(id interface{}, beanPtr interface{}) (bool, error) {
 	if reflect.ValueOf(id).IsZero() {
 		return false, errors.New("id cannot be nil")
 	}
-	return x.ID(id).Get(beanPtr)
+	return x.Session.ID(id).Get(beanPtr)
 }
 
 func (x *session) UpdateById(id interface{}, beanPtr interface{}) (int64, error) {
 	if reflect.ValueOf(id).IsZero() {
 		return 0, errors.New("id cannot be nil")
 	}
-	return x.ID(id).Update(beanPtr)
+	return x.Session.ID(id).Update(beanPtr)
 }
 
 func (x *session) DeleteById(id interface{}, beanPtr interface{}) (int64, error) {
 	if reflect.ValueOf(id).IsZero() {
 		return 0, errors.New("id cannot be nil")
 	}
-	return x.ID(id).Delete(beanPtr)
+	return x.Session.ID(id).Delete(beanPtr)
 }
