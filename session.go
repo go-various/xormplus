@@ -7,82 +7,89 @@ import (
 	"strconv"
 )
 
-type session struct {
+var _ XormPlus = (*Session)(nil)
+
+type Session struct {
 	*xorm.Session
 	Builder
 }
 
-func NewSession(s *xorm.Session, b Builder) *session {
-	return &session{Session: s, Builder: b}
-}
-func (x *session) Begin() error {
-	return x.Session.Begin()
-}
-func (x *session) Commit() error {
-	return x.Session.Commit()
+func (session *Session) NewSession() *Session {
+	return &Session{Session: session.Session, Builder: session.Builder}
 }
 
-func (x *session) Rollback() error {
-	return x.Session.Rollback()
+func NewSession(s *xorm.Session, b Builder) *Session {
+	return &Session{Session: s, Builder: b}
+}
+func (session *Session) Begin() error {
+	return session.Session.Begin()
 }
 
-func (x *session) Close() {
-	x.Session.Close()
+func (session *Session) Commit() error {
+	return session.Session.Commit()
 }
 
-func (x *session) Fetch(rowsSlicePtr interface{}) error {
-	sql, err := x.Builder.BuildSQL()
+func (session *Session) Rollback() error {
+	return session.Session.Rollback()
+}
+
+func (session *Session) Close() {
+	session.Session.Close()
+}
+
+func (session *Session) Fetch(rowsSlicePtr interface{}) error {
+	sql, err := session.Builder.BuildSQL()
 	if err != nil {
 		return err
 	}
-	return x.Session.SQL(sql).Find(rowsSlicePtr)
+	return session.Session.SQL(sql).Find(rowsSlicePtr)
 }
 
-func (x *session) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
-	if x.Pageable() == nil {
+func (session *Session) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
+	if session.Pageable() == nil {
 		return nil, errors.New("pageable not supplied")
 	}
-	query, err := x.Builder.BuildCountSQL()
+	query, err := session.Builder.BuildCountSQL()
 	if err != nil {
 		return nil, err
 	}
 
-	total, err := x.Session.QueryString(query)
+	total, err := session.Session.QueryString(query)
 	if err != nil {
 		return nil, err
 	}
 
-	sql, err := x.BuildSQL()
+	sql, err := session.Builder.BuildSQL()
 	if err != nil {
 		return nil, err
 	}
-	err = x.Session.SQL(sql).Find(rowsSlicePtr)
+	err = session.Session.SQL(sql).Find(rowsSlicePtr)
 	if err != nil {
 		return nil, err
 	}
 
 	tt, _ := strconv.Atoi(total[0]["total"])
-	pg := NewPagination(tt, x.Pageable())
+	pg := NewPagination(tt, session.Pageable())
 	return pg, nil
 }
 
-func (x *session) GetById(id interface{}, beanPtr interface{}) (bool, error) {
+func (session *Session) GetById(id interface{}, beanPtr interface{}) (bool, error) {
 	if reflect.ValueOf(id).IsZero() {
 		return false, errors.New("id cannot be nil")
 	}
-	return x.Session.ID(id).Get(beanPtr)
+	return session.Session.ID(id).Get(beanPtr)
 }
 
-func (x *session) UpdateById(id interface{}, beanPtr interface{}) (int64, error) {
+func (session *Session) UpdateById(id interface{}, beanPtr interface{}) (int64, error) {
 	if reflect.ValueOf(id).IsZero() {
 		return 0, errors.New("id cannot be nil")
 	}
-	return x.Session.ID(id).Update(beanPtr)
+	return session.Session.ID(id).Update(beanPtr)
 }
 
-func (x *session) DeleteById(id interface{}, beanPtr interface{}) (int64, error) {
+func (session *Session) DeleteById(id interface{}, beanPtr interface{}) (int64, error) {
 	if reflect.ValueOf(id).IsZero() {
 		return 0, errors.New("id cannot be nil")
 	}
-	return x.Session.ID(id).Delete(beanPtr)
+	return session.Session.ID(id).Delete(beanPtr)
 }

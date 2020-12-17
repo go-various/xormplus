@@ -12,5 +12,5 @@ type XormPlus interface {
 	Fetch(rowsSlicePtr interface{}) error
 
 	FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error)
-	NewSession() *session
+	NewSession() *Session
 }

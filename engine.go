@@ -39,37 +39,37 @@ func NewEngine(c *Config, logger hclog.Logger) (*engine, error) {
 	return eng, nil
 }
 
-func (x *engine) NewSession() *session {
-	return NewSession(x.Engine.NewSession(), x.builder)
+func (e *engine) NewSession() *Session {
+	return NewSession(e.Engine.NewSession(), e.builder)
 }
 
-func (x *engine) Fetch(rowsSlicePtr interface{}) error {
-	session := x.NewSession()
+func (e *engine) Fetch(rowsSlicePtr interface{}) error {
+	session := e.NewSession()
 	defer session.Close()
 	return session.Fetch(rowsSlicePtr)
 }
 
-func (x *engine) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
-	session := x.NewSession()
+func (e *engine) FetchWithPage(rowsSlicePtr interface{}) (*Pagination, error) {
+	session := e.NewSession()
 	defer session.Close()
 
 	return session.FetchWithPage(rowsSlicePtr)
 }
 
-func (x *engine) GetById(id interface{}, beanPtr interface{}) (bool, error) {
-	session := x.NewSession()
+func (e *engine) GetById(id interface{}, beanPtr interface{}) (bool, error) {
+	session := e.NewSession()
 	defer session.Close()
 	return session.GetById(id, beanPtr)
 }
 
-func (x *engine) UpdateById(id interface{}, beanPtr interface{}) (int64, error) {
-	session := x.NewSession()
+func (e *engine) UpdateById(id interface{}, beanPtr interface{}) (int64, error) {
+	session := e.NewSession()
 	defer session.Close()
 	return session.UpdateById(id, beanPtr)
 }
 
-func (x *engine) DeleteById(id interface{}, beanPtr interface{}) (int64, error) {
-	session := x.NewSession()
+func (e *engine) DeleteById(id interface{}, beanPtr interface{}) (int64, error) {
+	session := e.NewSession()
 	defer session.Close()
 	return session.DeleteById(id, beanPtr)
 }

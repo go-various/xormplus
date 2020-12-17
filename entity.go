@@ -1,43 +1,51 @@
 package xormplus
 
-import (
-	"fmt"
-	"reflect"
-)
+var _ Entity = (*entity)(nil)
 
-type Operator string
 
-const (
-	OperatorNe         Operator = "<>"
-	OperatorEq         Operator = "="
-	OperatorLt         Operator = "<"
-	OperatorGt         Operator = ">"
-	OperatorLte        Operator = ">="
-	OperatorGte        Operator = ">="
-	OperatorIn         Operator = "IN"
-	OperatorNotIn      Operator = "NOT IN"
-	OperatorLike       Operator = "LIKE"
-	OperatorNotLike    Operator = "NOT LIKE"
-	OperatorBetween    Operator = "BETWEEN"
-	OperatorNotBetween Operator = "NOT BETWEEN"
-)
-
-func scalarValue(in interface{}) interface{} {
-	switch reflect.TypeOf(in).Kind() {
-	case reflect.Ptr:
-		value := reflect.ValueOf(in).Elem()
-		return scalarValue(value.Interface())
-	case reflect.String:
-		return fmt.Sprintf("'%v'", in)
-	default:
-		return fmt.Sprintf("%v", in)
-	}
+type Entity interface {
+	Id() interface{}
+	Detail() (bool, error)
+	Exists() (bool, error)
+	Create() (int64, error)
+	Update() (int64, error)
+	Remove() (int64, error)
+	Entity() interface{}
 }
-func sliceValue(in interface{})[]interface{}  {
-	var out []interface{}
-	s := reflect.ValueOf(in).Elem()
-	for i := 0; i < s.Len(); i++ {
-		out = append(out, scalarValue(s.Index(i).Interface()))
-	}
-	return out
+
+type entity struct {
+	dao     XormPlus
+	beanPtr interface{}
+}
+
+func NewEntity(dao XormPlus, objectPtr interface{}) *entity {
+	return &entity{dao: dao, beanPtr: objectPtr}
+}
+
+func (e *entity) Entity() interface{} {
+	return e.beanPtr
+}
+
+func (e *entity) Id() interface{} {
+	return e.beanPtr.(Table).ID()
+}
+
+func (e *entity) Exists() (bool, error) {
+	return e.dao.Exist(e.beanPtr)
+}
+
+func (e *entity) Detail() (has bool, err error) {
+	return e.dao.ID(e.beanPtr.(Table).ID()).Get(e.beanPtr)
+}
+
+func (e *entity) Create() (int64, error) {
+	return e.dao.InsertOne(e.beanPtr)
+}
+
+func (e *entity) Update() (int64, error) {
+	return e.dao.ID(e.beanPtr.(Table).ID()).Update(e.beanPtr)
+}
+
+func (e *entity) Remove() (rows int64, err error) {
+	return e.dao.ID(e.beanPtr.(Table).ID()).Delete( e.beanPtr)
 }
