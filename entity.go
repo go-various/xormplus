@@ -1,51 +1,51 @@
 package xormplus
 
-var _ Entity = (*entity)(nil)
+var _ EntityInc = (*Entity)(nil)
 
 
-type Entity interface {
-	Id() interface{}
+type EntityInc interface {
+	ID() interface{}
 	Detail() (bool, error)
 	Exists() (bool, error)
 	Create() (int64, error)
 	Update() (int64, error)
 	Remove() (int64, error)
-	Entity() interface{}
+	Object() interface{}
 }
 
-type entity struct {
+type Entity struct {
 	dao     XormPlus
 	beanPtr interface{}
 }
 
-func NewEntity(dao XormPlus, objectPtr interface{}) *entity {
-	return &entity{dao: dao, beanPtr: objectPtr}
+func NewEntity(dao XormPlus, objectPtr interface{}) *Entity {
+	return &Entity{dao: dao, beanPtr: objectPtr}
 }
 
-func (e *entity) Entity() interface{} {
+func (e *Entity) Object() interface{} {
 	return e.beanPtr
 }
 
-func (e *entity) Id() interface{} {
+func (e *Entity) ID() interface{} {
 	return e.beanPtr.(Table).ID()
 }
 
-func (e *entity) Exists() (bool, error) {
+func (e *Entity) Exists() (bool, error) {
 	return e.dao.Exist(e.beanPtr)
 }
 
-func (e *entity) Detail() (has bool, err error) {
+func (e *Entity) Detail() (has bool, err error) {
 	return e.dao.ID(e.beanPtr.(Table).ID()).Get(e.beanPtr)
 }
 
-func (e *entity) Create() (int64, error) {
+func (e *Entity) Create() (int64, error) {
 	return e.dao.InsertOne(e.beanPtr)
 }
 
-func (e *entity) Update() (int64, error) {
+func (e *Entity) Update() (int64, error) {
 	return e.dao.ID(e.beanPtr.(Table).ID()).Update(e.beanPtr)
 }
 
-func (e *entity) Remove() (rows int64, err error) {
+func (e *Entity) Remove() (rows int64, err error) {
 	return e.dao.ID(e.beanPtr.(Table).ID()).Delete( e.beanPtr)
 }

@@ -10,15 +10,11 @@ type Banner struct {
 	Title      *string `json:"title" xorm:"title not null comment('标题') VARCHAR(64)"`
 }
 
+
+
+
 func (o *Banner) TableName() string {
 	return "t_banner"
-}
-func (o *Banner) ID() interface{} {
-	return o.Id
-}
-
-func (o *Banner) NewEntity(dao XormPlus) Entity {
-	return NewEntity(dao, o)
 }
 
 func  TestEntity_Detail(t *testing.T) {
@@ -40,11 +36,5 @@ func  TestEntity_Detail(t *testing.T) {
 	session.Begin()
 	defer session.Close()
 
-	entity := banner.NewEntity(session)
-	has, err := entity.Exists()
-	if nil != err{
-		t.Fatal(err)
-	}
-
-	t.Log(has, entity.Entity())
+	session.Get(banner)
 }
