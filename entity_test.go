@@ -10,13 +10,12 @@ type Banner struct {
 	Title      *string `json:"title" xorm:"title not null comment('标题') VARCHAR(64)"`
 }
 
-
-
-
 func (o *Banner) TableName() string {
 	return "t_banner"
 }
-
+func (o *Banner) ID() interface{} {
+	return o.Id
+}
 func  TestEntity_Detail(t *testing.T) {
 	plus, err := NewEngine(&Config{
 		ShowSql:        true,
@@ -31,10 +30,16 @@ func  TestEntity_Detail(t *testing.T) {
 		t.Fatal(err)
 	}
 	banner := &Banner{}
-
+	banner.Id = new(int)
+	*banner.Id = 10
 	session := plus.NewSession()
 	session.Begin()
 	defer session.Close()
+	entry:= NewEntity(session, banner)
 
-	session.Get(banner)
+	_, err = entry.Detail()
+	if nil != err{
+		t.Fatal(err)
+	}
+	session.Commit()
 }
