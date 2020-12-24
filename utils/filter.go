@@ -7,11 +7,11 @@ import (
 )
 
 const keywords = `\s(replace|lock tables|select|update|delete|insert|delete|alter|drop|create|grant|revoke|shutdown|;|\\g)\s`
+
 var keyregexp *regexp.Regexp
+
 func init() {
-	var err error
-	keyregexp, err = regexp.Compile(keywords)
-	fmt.Println(err)
+	keyregexp, _ = regexp.Compile(keywords)
 }
 
 func Filter(s string) error {
